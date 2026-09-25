@@ -12,7 +12,7 @@ execute as @e[tag=tornado] at @s run function disasters:tick/tornado
 execute as @e[tag=Terremoto] at @s run function disasters:tick/terremoto
 
 #Meteoro
-#execute as @e[tag=Meteoro] at @s run function disasters:tick/meteor
+execute as @e[tag=MeteoroWatcher] at @s run function disasters:tick/meteor
 
 #Tsunami
 execute as @e[tag=Tsunami] at @s run function disasters:tick/tsunami

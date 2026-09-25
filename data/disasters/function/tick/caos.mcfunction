@@ -22,7 +22,7 @@ execute if entity @s[tag=CN2] if score @s Tiempo matches 1200.. run function dis
 
 # Метеор
 execute if entity @s[tag=CN3] as @a if items entity @s container.* minecraft:firework_star[custom_model_data=210101] run title @s actionbar [{"text":"A meteor will fall at :","bold":true,"color":"yellow"},{"text":" "},{"score":{"name":"@e[tag=CN3,limit=1,sort=nearest]","objective":"Pos0"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN3,limit=1,sort=nearest]","objective":"altura"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN3,limit=1,sort=nearest]","objective":"Pos2"},"bold":true,"color":"dark_red"}]
-execute if entity @s[tag=CN3] if score @s Tiempo matches 1200.. run function disasters:meteoro/ejecutarrandom
+execute if entity @s[tag=CN3] if score @s Tiempo matches 1200.. run function disasters:meteoro/generar
 
 # Цунами
 execute if entity @s[tag=CN4] as @a if items entity @s container.* minecraft:firework_star[custom_model_data=210101] run title @s actionbar [{"text":"A tsunami will spawn at :","bold":true,"color":"yellow"},{"text":" "},{"score":{"name":"@e[tag=CN4,limit=1,sort=nearest]","objective":"Pos0"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN4,limit=1,sort=nearest]","objective":"altura"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN4,limit=1,sort=nearest]","objective":"Pos2"},"bold":true,"color":"dark_red"}]

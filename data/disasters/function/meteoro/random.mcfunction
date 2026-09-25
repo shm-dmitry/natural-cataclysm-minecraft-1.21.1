@@ -1,1 +1,0 @@
-execute store result score rng# Random run random value 1..3
