@@ -14,7 +14,9 @@ execute as @e[tag=tornado0] at @s run tp @e[tag=tornado6] ^-0.2 ^ ^-0.2
 execute as @e[tag=tornado0] at @s run tp @e[tag=tornado7] ^-0.2 ^ ^0.2
 execute as @e[tag=tornado0] at @s run tp @e[tag=tornado8] ^0.2 ^ ^-0.2
 # TODO: частицы, потом вернуться если некрасиво
-execute as @e[tag=tornado0] at @s if dimension minecraft:overworld anchored eyes run function disasters:tornado/particle
+scoreboard players add #tornado_particle Timer 1
+execute if score #tornado_particle Timer matches 2.. run scoreboard players set #tornado_particle Timer 0
+execute if score #tornado_particle Timer matches 0 as @e[tag=tornado0] at @s if dimension minecraft:overworld anchored eyes run function disasters:tornado/particle
 
 # --- таймер жизни ---
 execute as @e[tag=seguir,scores={Tornado=1}] at @s run summon marker ~ ~ ~ {Tags:["generarbloque"]}

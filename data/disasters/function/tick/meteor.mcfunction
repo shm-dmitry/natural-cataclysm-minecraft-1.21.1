@@ -1,20 +1,26 @@
 # disasters:meteoro/tick
-# Следит за fireball. Звук раз в секунду. Cleanup при исчезновении или таймауте.
 
-# 1. Таймер смотрителя
+# 1. Таймер
 scoreboard players add @s Tiempo 1
 
-# 2. Счётчик звука (раз в 20 тиков)
+# 2. Синхронизация позиции
+execute if entity @e[tag=Meteoro] at @e[tag=Meteoro,limit=1] run tp @s ~ ~ ~
+
+# 3. Частицы (от fireball)
+execute if entity @e[tag=Meteoro] at @e[tag=Meteoro,limit=1] run function disasters:meteoro/particle
+
+# 4. Звук раз в 20 тиков
 scoreboard players add @s MeteoroSound 1
 execute if score @s MeteoroSound matches 20.. run scoreboard players set @s MeteoroSound 0
 execute if score @s MeteoroSound matches 20.. run function disasters:meteoro/sound
 
-# 3. Если таймер вышел — принудительный cleanup
+# 5. Таймаут
 execute if score @s Tiempo matches 600.. run function disasters:meteoro/cleanup with storage disasters:meteoro
 execute if score @s Tiempo matches 600.. run return 0
 
-# 4. Если fireball ещё жив — ждём
+# 6. Fireball жив — ждём
 execute if entity @e[tag=Meteoro] run return 0
 
-# 5. Fireball исчез — cleanup
+# 7. Fireball исчез — взрыв + cleanup
+function disasters:meteoro/explode
 function disasters:meteoro/cleanup with storage disasters:meteoro

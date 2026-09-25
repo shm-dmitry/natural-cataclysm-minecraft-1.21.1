@@ -1,0 +1,767 @@
+=== FILE: ./data/minecraft/tags/function/load.json ===
+{
+	"values": [
+		"disasters:load"
+	]
+}=== FILE: ./data/minecraft/tags/function/tick.json ===
+{
+	"values": [
+		"disasters:main"
+	]
+}=== FILE: ./data/disasters/advancement/recipes/detector.json ===
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_iron_ingot": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:iron_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_iron_ingot"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "disasters:detector"
+    ]
+  }
+}=== FILE: ./data/disasters/recipe/detector.json ===
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  I",
+    "iRr",
+    "iii"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:diamond"
+    },
+    "i": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "r": {
+      "item": "minecraft:red_stained_glass"
+    }
+  },
+  "result": {
+    "id": "minecraft:firework_star",
+    "count": 1,
+    "components": {
+      "minecraft:custom_data": "{natural_cataclysm:{item:\"detector\"}}",
+      "minecraft:custom_model_data": 210101,
+      "minecraft:item_name": "{\"text\":\"Detector\",\"italic\":false}"
+    }
+  }
+}
+=== FILE: ./data/disasters/function/sequia/damage_players.mcfunction ===
+# disasters:sequia/damage_players
+# Урон игрокам 5 сердец (10 хп) в радиусе 30.
+
+execute as @a[distance=..30] run damage @s 10 minecraft:generic=== FILE: ./data/disasters/function/sequia/generar.mcfunction ===
+# disasters:sequia/generar
+# Разовая засуха: телепорт в сторону от игрока, все эффекты сразу, убить триггер.
+
+# 1. Телепорт к случайному игроку и разброс 15-25 блоков
+execute in minecraft:overworld if entity @a[sort=random,limit=1] at @a[sort=random,limit=1] run spreadplayers ~ ~ 15 25 true @s
+execute in minecraft:overworld unless entity @a[sort=random,limit=1] run kill @s
+
+# 2. Сохранение координат в storage (опционально, для отладки)
+execute store result storage disasters:sequia x int 1 run data get entity @s Pos[0]
+execute store result storage disasters:sequia z int 1 run data get entity @s Pos[2]
+
+# 3. Спавн одного маркера-якоря (нужен как точка отсчёта для fill/kill)
+summon marker ~ ~ ~ {Tags:["sequia"]}
+
+# 4. Все эффекты засухи
+function disasters:sequia/dry_ground
+function disasters:sequia/remove_water
+function disasters:sequia/kill_plants
+function disasters:sequia/kill_mobs
+function disasters:sequia/damage_players
+function disasters:sequia/random_fire
+
+# 5. Убрать маркер-якорь и триггер
+kill @e[tag=sequia]
+kill @s=== FILE: ./data/disasters/function/sequia/remove_water.mcfunction ===
+# disasters:sequia/remove_water
+# Убираем воду в радиусе 30.
+
+fill ~-30 ~-10 ~-30 ~30 ~ ~30 air replace water
+=== FILE: ./data/disasters/function/sequia/random_fire.mcfunction ===
+# disasters:sequia/random_fire
+# 5 случайных точек с огнём.
+
+# Точка 1
+summon marker ~ ~ ~ {Tags:["sequia_fire_tmp"]}
+spreadplayers ~ ~ 5 25 true @e[tag=sequia_fire_tmp,limit=1]
+execute at @e[tag=sequia_fire_tmp,limit=1] run setblock ~ ~1 ~ fire
+kill @e[tag=sequia_fire_tmp]
+
+# Точка 2
+summon marker ~ ~ ~ {Tags:["sequia_fire_tmp"]}
+spreadplayers ~ ~ 5 25 true @e[tag=sequia_fire_tmp,limit=1]
+execute at @e[tag=sequia_fire_tmp,limit=1] run setblock ~ ~1 ~ fire
+kill @e[tag=sequia_fire_tmp]
+
+# Точка 3
+summon marker ~ ~ ~ {Tags:["sequia_fire_tmp"]}
+spreadplayers ~ ~ 5 25 true @e[tag=sequia_fire_tmp,limit=1]
+execute at @e[tag=sequia_fire_tmp,limit=1] run setblock ~ ~1 ~ fire
+kill @e[tag=sequia_fire_tmp]
+
+# Точка 4
+summon marker ~ ~ ~ {Tags:["sequia_fire_tmp"]}
+spreadplayers ~ ~ 5 25 true @e[tag=sequia_fire_tmp,limit=1]
+execute at @e[tag=sequia_fire_tmp,limit=1] run setblock ~ ~1 ~ fire
+kill @e[tag=sequia_fire_tmp]
+
+# Точка 5
+summon marker ~ ~ ~ {Tags:["sequia_fire_tmp"]}
+spreadplayers ~ ~ 5 25 true @e[tag=sequia_fire_tmp,limit=1]
+execute at @e[tag=sequia_fire_tmp,limit=1] run setblock ~ ~1 ~ fire
+kill @e[tag=sequia_fire_tmp]
+=== FILE: ./data/disasters/function/sequia/kill_plants.mcfunction ===
+# disasters:sequia/kill_plants
+# Убираем растительность в радиусе 30.
+
+fill ~-30 ~-1 ~-30 ~30 ~ ~30 air replace short_grass
+fill ~-30 ~-1 ~-30 ~30 ~ ~30 air replace tall_grass
+fill ~-30 ~-1 ~-30 ~30 ~ ~30 air replace fern
+fill ~-30 ~-1 ~-30 ~30 ~ ~30 air replace large_fern
+fill ~-30 ~-1 ~-30 ~30 ~ ~30 air replace dead_bush
+fill ~-30 ~-1 ~-30 ~30 ~ ~30 air replace dandelion
+fill ~-30 ~-1 ~-30 ~30 ~ ~30 air replace poppy
+fill ~-30 ~-1 ~-30 ~30 ~ ~30 air replace #minecraft:flowers
+fill ~-30 ~-1 ~-30 ~30 ~ ~30 air replace #minecraft:leaves=== FILE: ./data/disasters/function/sequia/kill_mobs.mcfunction ===
+kill @e[distance=..30,type=!player,type=!item,type=!marker,type=!interaction,type=!item_display,type=!armor_stand,type=!experience_orb]=== FILE: ./data/disasters/function/sequia/dry_ground.mcfunction ===
+# disasters:sequia/dry_ground
+# Заменяем траву и землю на сухую землю в радиусе 30.
+
+fill ~-30 ~-2 ~-30 ~30 ~ ~30 coarse_dirt replace grass_block
+fill ~-30 ~-2 ~-30 ~30 ~ ~30 coarse_dirt replace dirt
+fill ~-30 ~-2 ~-30 ~30 ~ ~30 coarse_dirt replace podzol
+fill ~-30 ~-2 ~-30 ~30 ~ ~30 coarse_dirt replace mycelium=== FILE: ./data/disasters/function/tornado/generar.mcfunction ===
+# disasters:tornado/generar
+# Спавн торнадо в Верхнем мире недалеко от случайного игрока.
+
+# 1. Телепорт к случайному игроку и разброс 10-40 блоков от него.
+#    Если игроков нет — триггер убивается, торнадо не спавнится.
+execute in minecraft:overworld if entity @a[sort=random,limit=1] at @a[sort=random,limit=1] run spreadplayers ~ ~ 10 40 true @s
+execute in minecraft:overworld unless entity @a[sort=random,limit=1] run kill @s
+
+# 2. Форс-загрузка стартового чанка торнадо + сохранение координат для последующего снятия.
+execute in minecraft:overworld at @s run forceload add ~ ~ ~ ~
+execute store result storage disasters:tornado x int 1 run data get entity @s Pos[0]
+execute store result storage disasters:tornado z int 1 run data get entity @s Pos[2]
+
+# 3. Спавн 9 слоёв вихря (tornado0..tornado8).
+summon minecraft:interaction ~ ~ ~ {Tags:["tornado8","tornado","Tornado","tor1"]}
+summon minecraft:interaction ~ ~ ~ {Tags:["tornado7","tornado","Tornado","tor1"]}
+summon minecraft:interaction ~ ~ ~ {Tags:["tornado6","tornado","Tornado","tor1"]}
+summon minecraft:interaction ~ ~ ~ {Tags:["tornado5","tornado","Tornado","tor1"]}
+summon minecraft:interaction ~ ~ ~ {Tags:["tornado4","tornado","Tornado","tor1"]}
+summon minecraft:interaction ~ ~ ~ {Tags:["tornado3","tornado","Tornado","tor1"]}
+summon minecraft:interaction ~ ~ ~ {Tags:["tornado2","tornado","Tornado","tor1"]}
+summon minecraft:interaction ~ ~ ~ {Tags:["tornado1","tornado","Tornado","tor1"]}
+summon minecraft:interaction ~ ~ ~ {Tags:["tornado0","tornado","Tornado","tor1"]}
+
+# 4. «Мозг» торнадо — на 30 блоков выше. Тег Catastrofe блокирует запуск новых катастроф.
+summon minecraft:interaction ~ ~30 ~ {Tags:["seguir","Tornado","tor1","Catastrofe"]}
+
+# 5. Убить триггер (caos-маркер).
+kill @s=== FILE: ./data/disasters/function/tornado/particle.mcfunction ===
+# disasters:tornado/particle
+# Вызывается для @e[tag=tornado] в тике торнадо.
+# ВАЖНО: вызывать раз в 2-3 тика, а не каждый тик (см. tick.mcfunction).
+
+# --- нижний уровень: дым у земли (8 позиций вокруг центра) ---
+particle minecraft:campfire_cosy_smoke ^ ^-0.5 ^1 0 10 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^1 ^-0.5 ^ 0 10 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^1 ^-0.5 ^1 0 10 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^-1 ^-0.5 ^1 0 10 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^-1 ^-0.5 ^-1 0 10 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^ ^-0.5 ^-1 0 10 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^-1 ^-0.5 ^ 0 10 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^1 ^-0.5 ^-1 0 10 0 0.1 8 force
+
+# --- средний уровень: дым (8 позиций, радиус 2.5) ---
+particle minecraft:campfire_cosy_smoke ^ ^5 ^2.5 0 25 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^2.5 ^5 ^ 0 25 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^2.5 ^5 ^2.5 0 25 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^-2.5 ^5 ^2.5 0 25 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^-2.5 ^5 ^-2.5 0 25 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^ ^5 ^-2.5 0 25 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^-2.5 ^5 ^ 0 25 0 0.1 8 force
+particle minecraft:campfire_cosy_smoke ^2.5 ^5 ^-2.5 0 25 0 0.1 8 force
+
+# --- нижний уровень: облако (8 позиций) ---
+particle minecraft:cloud ^ ^-0.5 ^1 0 10 0 0.1 8 force
+particle minecraft:cloud ^1 ^-0.5 ^ 0 10 0 0.1 8 force
+particle minecraft:cloud ^1 ^-0.5 ^1 0 10 0 0.1 8 force
+particle minecraft:cloud ^-1 ^-0.5 ^1 0 10 0 0.1 8 force
+particle minecraft:cloud ^-1 ^-0.5 ^-1 0 10 0 0.1 8 force
+particle minecraft:cloud ^ ^-0.5 ^-1 0 10 0 0.1 8 force
+particle minecraft:cloud ^-1 ^-0.5 ^ 0 10 0 0.1 8 force
+particle minecraft:cloud ^1 ^-0.5 ^-1 0 10 0 0.1 8 force
+
+# --- средний уровень: облако (8 позиций) ---
+particle minecraft:cloud ^2.5 ^5 ^-2.5 0 20 0 0.1 8 force
+particle minecraft:cloud ^-2.5 ^5 ^ 0 50 0 0.1 8 force
+particle minecraft:cloud ^ ^5 ^-2.5 0 50 0 0.1 8 force
+particle minecraft:cloud ^-2.5 ^5 ^-2.5 0 50 0 0.1 8 force
+particle minecraft:cloud ^-2.5 ^5 ^2.5 0 50 0 0.1 8 force
+particle minecraft:cloud ^2.5 ^5 ^2.5 0 50 0 0.1 8 force
+particle minecraft:cloud ^2.5 ^5 ^ 0 50 0 0.1 8 force
+particle minecraft:cloud ^ ^5 ^2.5 0 50 0 0.1 8 force
+
+# --- шапка вихря на высоте 56 ---
+particle minecraft:campfire_cosy_smoke ^ ^56 ^1 30 0 30 0 150 force
+particle minecraft:cloud ^ ^56 ^1 30 0 30 0 150 force
+particle minecraft:campfire_signal_smoke ^ ^56 ^1 30 0 30 0 150 force=== FILE: ./data/disasters/function/tornado/cleanup.mcfunction ===
+# disasters:tornado/cleanup
+# Снимает forceload стартового чанка торнадо и убивает все сущности торнадо.
+
+$forceload remove $(x) 0 $(z)
+kill @e[tag=Tornado]=== FILE: ./data/disasters/function/tornado/random.mcfunction ===
+execute store result score rng# Random run random value 1..3=== FILE: ./data/disasters/function/tornado/bloque.mcfunction ===
+# @context minecraft:item_display
+# disasters:tornado/bloque
+# Ломает блок в точке item_display, копирует ближайший дроп как свой item,
+# съедает дроп и переключает тег BloqueTornado -> BloqueTornado1.
+
+# 1. Сломать блок в точке (с дропом)
+setblock ~ ~ ~ air destroy
+
+# 2. Скопировать ближайший дроп в свой item (одна строка вместо пяти)
+data modify entity @s item set from entity @e[type=item,limit=1,distance=..2,sort=nearest] Item
+
+# 3. Съесть дроп
+kill @e[type=item,limit=1,distance=..2,sort=nearest]
+
+# 4. Переключить тег: блок в вихре -> блок-снаряд
+tag @s add BloqueTornado1
+tag @s remove BloqueTornado=== FILE: ./data/disasters/function/tornado/ejecutarrandom.mcfunction ===
+function disasters:tornado/random
+
+execute if score rng# Random matches 1 run particle minecraft:firework ~ ~ ~ 0 0 0 0 5
+execute if score rng# Random matches 2..3 run summon minecraft:item_display ~ ~-1 ~ {Tags:["BloqueTornado"],CustomName:'{"text":"un bloque"}'}
+
+scoreboard players reset rng# Random=== FILE: ./data/disasters/function/tick.mcfunction ===
+execute unless entity @e[tag=Catastrofe] at @s run scoreboard players add CatastoTeimpo Tiempo 1
+execute if score CatastoTeimpo Tiempo matches 6000 run function disasters:ejecutarrandom
+execute if score CatastoTeimpo Tiempo matches 6001 run scoreboard players reset CatastoTeimpo Tiempo
+
+#detector
+execute as @e[tag=caos] at @s run function disasters:tick/caos
+
+
+execute as @e[tag=tornado] at @s run function disasters:tick/tornado
+
+#Terremoto
+execute as @e[tag=Terremoto] at @s run function disasters:tick/terremoto
+
+#Meteoro
+execute as @e[tag=MeteoroWatcher] at @s run function disasters:tick/meteor
+
+#Tsunami
+execute as @e[tag=Tsunami] at @s run function disasters:tick/tsunami
+
+#blackhole
+execute as @e[tag=blackole] at @s run function disasters:tick/blackole
+
+function disasters:nc/handle_triggers
+=== FILE: ./data/disasters/function/meteoro/generar.mcfunction ===
+# disasters:meteoro/generar
+# Спавн метеора (fireball) высоко над случайным игроком.
+
+# 1. Телепорт к случайному игроку и разброс 15-25 блоков
+execute in minecraft:overworld if entity @a[sort=random,limit=1] at @a[sort=random,limit=1] run spreadplayers ~ ~ 15 25 true @s
+execute in minecraft:overworld unless entity @a[sort=random,limit=1] run kill @s
+
+# 2. Сохранение координат для cleanup
+execute store result storage disasters:meteoro x int 1 run data get entity @s Pos[0]
+execute store result storage disasters:meteoro z int 1 run data get entity @s Pos[2]
+
+# 3. Форс-загрузка чанка
+execute at @s run forceload add ~ ~ ~ ~
+
+# 4. Спавн fireball (снаряд гаста) на Y=250, летит вниз, взрыв как у динамита
+summon fireball ~ ~250 ~ {ExplosionPower:4b,Motion:[0.0,-1.0,0.0],Tags:["Meteoro"]}
+
+# 5. Спавн маркера-смотрителя на той же высоте
+summon marker ~ ~250 ~ {Tags:["MeteoroWatcher","Catastrofe"]}
+
+# 6. Убить триггер
+kill @s=== FILE: ./data/disasters/function/meteoro/sound.mcfunction ===
+# disasters:meteoro/sound
+# Звук падения метеора.
+
+execute at @e[tag=Meteoro,limit=1] run playsound entity.ghast.shoot ambient @a[distance=..200] ~ ~ ~ 1 0.5 1=== FILE: ./data/disasters/function/meteoro/particle.mcfunction ===
+# disasters:meteoro/particle
+# Частицы вокруг fireball.
+
+particle flame ~ ~ ~ 0.5 0.5 0.5 0 3 force
+particle smoke ~ ~ ~ 0.5 0.5 0.5 0 3 force=== FILE: ./data/disasters/function/meteoro/cleanup.mcfunction ===
+# disasters:meteoro/cleanup
+# Снимает forceload и убивает смотрителя.
+
+$forceload remove $(x) 0 $(z)
+kill @s=== FILE: ./data/disasters/function/meteoro/explode.mcfunction ===
+summon tnt ~ ~ ~ {fuse:20}
+summon tnt ~ ~1 ~ {fuse:20}
+summon tnt ~1 ~ ~ {fuse:20}
+summon tnt ~-1 ~ ~ {fuse:20}=== FILE: ./data/disasters/function/main.mcfunction ===
+execute as @a at @s run function disasters:tick=== FILE: ./data/disasters/function/load.mcfunction ===
+tellraw @a ["",{"text":"================= ","color":"gold"},{"text":"Natural Cataclysm","bold":true,"color":"gold"},{"text":" =================","color":"gold"},{"text":"\n"},{"text":"Creador","color":"green"},{"text":": ","color":"dark_green"},{"text":"Kiwi_Kcz","color":"yellow","clickEvent":{"action":"open_url","value":"https://modrinth.com/user/kiwiKcz"}},{"text":"datapack version:","color":"green"},{"text":" V1.0","color":"yellow"},{"text":"\n"},{"text":"===============================================","color":"gold"},{"text":"\n "}]
+
+scoreboard objectives add Tiempo dummy
+scoreboard objectives add Tornado dummy
+scoreboard objectives add Random dummy
+scoreboard objectives add Terremoto dummy
+scoreboard objectives add Tsunami dummy
+scoreboard objectives add altura dummy
+scoreboard objectives add tirar dummy
+scoreboard objectives add Pos0 dummy
+scoreboard objectives add Pos2 dummy
+scoreboard objectives add sonido dummy
+scoreboard objectives add TiempoTerremoto dummy
+scoreboard objectives add TiempoTsunami dummy
+scoreboard objectives add MeteoroSound dummy
+scoreboard objectives add Timer dummy
+
+scoreboard objectives add nc.spawn trigger "Natural Cataclysm Spawn"
+
+gamerule commandModificationBlockLimit 999999
+=== FILE: ./data/disasters/function/catastroferandom.mcfunction ===
+execute store result score rng# Random run random value 1..6=== FILE: ./data/disasters/function/tick/tsunami.mcfunction ===
+# disasters:tsunami/tick
+# Вызывается каждый тик для каждого @e[tag=Tsunami].
+
+# 1. Таймер жизни
+scoreboard players add @s TiempoTsunami 1
+
+# 2. Подъём воды каждые 120 тиков (6 сек) — 10 подъёмов за 60 сек
+execute if score @s TiempoTsunami matches 1 run function disasters:tsunami/rise
+execute if score @s TiempoTsunami matches 121 run function disasters:tsunami/rise
+execute if score @s TiempoTsunami matches 241 run function disasters:tsunami/rise
+execute if score @s TiempoTsunami matches 361 run function disasters:tsunami/rise
+execute if score @s TiempoTsunami matches 481 run function disasters:tsunami/rise
+execute if score @s TiempoTsunami matches 601 run function disasters:tsunami/rise
+execute if score @s TiempoTsunami matches 721 run function disasters:tsunami/rise
+execute if score @s TiempoTsunami matches 841 run function disasters:tsunami/rise
+execute if score @s TiempoTsunami matches 961 run function disasters:tsunami/rise
+execute if score @s TiempoTsunami matches 1081 run function disasters:tsunami/rise
+
+# 3. Урон игрокам в радиусе 30 (если они в воде)
+execute as @a[distance=..30] at @s if block ~ ~ ~ water run damage @s 1 minecraft:drown
+
+# 4. Завершение на 1200 тиках (60 сек)
+execute if score @s TiempoTsunami matches 1200 run function disasters:tsunami/cleanup with storage disasters:tsunami=== FILE: ./data/disasters/function/tick/caos.mcfunction ===
+# disasters:tick/caos
+# Тик предвестника катастрофы. Показывает координаты, играет звук, запускает катастрофу.
+
+# --- сохранение координат (X, Y, Z) ---
+execute store result score @s Pos0 run data get entity @s Pos[0]
+execute store result score @s altura run data get entity @s Pos[1]
+execute store result score @s Pos2 run data get entity @s Pos[2]
+
+# --- звук приближения ---
+execute run scoreboard players add @s sonido 1
+execute if score @s sonido matches 1 as @a at @s if items entity @s container.* minecraft:firework_star[minecraft:custom_model_data=210101] run playsound disasters:custom.catastrofe ambient @a[distance=..10] ~ ~ ~ 0.15 1 1
+
+# --- таймер ---
+execute run scoreboard players add @s Tiempo 1
+execute if score @s Tiempo matches ..200 run execute if score @s sonido matches 10.. run scoreboard players set @s sonido 0
+execute if score @s Tiempo matches 200..400 run execute if score @s sonido matches 6.. run scoreboard players set @s sonido 0
+execute if score @s Tiempo matches 400..800 run execute if score @s sonido matches 4.. run scoreboard players set @s sonido 0
+execute if score @s Tiempo matches 800..1000 run execute if score @s sonido matches 2.. run scoreboard players set @s sonido 0
+execute if score @s Tiempo matches 1000.. run scoreboard players set @s sonido 0
+
+# --- Торнадо ---
+execute if entity @s[tag=CN1] as @a if items entity @s container.* minecraft:firework_star[custom_model_data=210101] run title @s actionbar [{"text":"Торнадо появится в :","bold":true,"color":"yellow"},{"text":" "},{"score":{"name":"@e[tag=CN1,limit=1,sort=nearest]","objective":"Pos0"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN1,limit=1,sort=nearest]","objective":"altura"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN1,limit=1,sort=nearest]","objective":"Pos2"},"bold":true,"color":"dark_red"}]
+execute if entity @s[tag=CN1] if score @s Tiempo matches 1200.. run function disasters:tornado/generar
+
+# --- Землетрясение ---
+execute if entity @s[tag=CN2] as @a if items entity @s container.* minecraft:firework_star[custom_model_data=210101] run title @s actionbar [{"text":"Землетрясение начнётся в :","bold":true,"color":"yellow"},{"text":" "},{"score":{"name":"@e[tag=CN2,limit=1,sort=nearest]","objective":"Pos0"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN2,limit=1,sort=nearest]","objective":"altura"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN2,limit=1,sort=nearest]","objective":"Pos2"},"bold":true,"color":"dark_red"}]
+execute if entity @s[tag=CN2] if score @s Tiempo matches 1200.. run function disasters:terremoto/terremoto
+
+# --- Метеор ---
+execute if entity @s[tag=CN3] as @a if items entity @s container.* minecraft:firework_star[custom_model_data=210101] run title @s actionbar [{"text":"Метеор упадёт в :","bold":true,"color":"yellow"},{"text":" "},{"score":{"name":"@e[tag=CN3,limit=1,sort=nearest]","objective":"Pos0"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN3,limit=1,sort=nearest]","objective":"altura"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN3,limit=1,sort=nearest]","objective":"Pos2"},"bold":true,"color":"dark_red"}]
+execute if entity @s[tag=CN3] if score @s Tiempo matches 1200.. run function disasters:meteoro/generar
+
+# --- Цунами ---
+execute if entity @s[tag=CN4] as @a if items entity @s container.* minecraft:firework_star[custom_model_data=210101] run title @s actionbar [{"text":"Цунами появится в :","bold":true,"color":"yellow"},{"text":" "},{"score":{"name":"@e[tag=CN4,limit=1,sort=nearest]","objective":"Pos0"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN4,limit=1,sort=nearest]","objective":"altura"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN4,limit=1,sort=nearest]","objective":"Pos2"},"bold":true,"color":"dark_red"}]
+execute if entity @s[tag=CN4] if score @s Tiempo matches 1200.. run function disasters:tsunami/generar
+
+# --- Черная дыра (Gravity) ---
+execute if entity @s[tag=CN5] as @a if items entity @s container.* minecraft:firework_star[custom_model_data=210101] run title @s actionbar [{"text":"Гравитация усиливается в :","bold":true,"color":"yellow"},{"text":" "},{"score":{"name":"@e[tag=CN5,limit=1,sort=nearest]","objective":"Pos0"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN5,limit=1,sort=nearest]","objective":"altura"},"bold":true,"color":"dark_red"},{"text":" ","bold":true,"color":"dark_red"},{"score":{"name":"@e[tag=CN5,limit=1,sort=nearest]","objective":"Pos2"},"bold":true,"color":"dark_red"}]
+execute if entity @s[tag=CN5] if score @s Tiempo matches 1200.. run function disasters:blackole/generar
+
+# --- Засуха (Heat) ---
+execute if entity @s[tag=CN6] as @a if items entity @s container.* minecraft:firework_star[custom_model_data=210101] run title @s actionbar [{"text":"Жара начинает усиливаться","bold":true,"color":"yellow"}]
+execute if entity @s[tag=CN6] if score @s Tiempo matches 1200.. run function disasters:sequia/generar=== FILE: ./data/disasters/function/tick/tornado.mcfunction ===
+# ===== Tornado: tick =====
+
+# --- визуал и вращение ---
+execute as @e[tag=seguir] at @s run playsound item.elytra.flying ambient @a[distance=..40] ~ ~ ~ 0.1 1.5 1
+execute as @e[tag=seguir] at @s run tp @e[tag=tornado0] ^ ^0.5 ^
+execute as @e[tag=tornado0] at @s run tp @s ~ ~ ~ ~15 0
+execute as @e[tag=tornado] at @s run tp @s ~ ~ ~ ~15 0
+execute as @e[tag=tornado0] at @s run tp @e[tag=tornado1] ^ ^ ^0.2
+execute as @e[tag=tornado0] at @s run tp @e[tag=tornado2] ^ ^ ^-0.2
+execute as @e[tag=tornado0] at @s run tp @e[tag=tornado3] ^0.2 ^ ^
+execute as @e[tag=tornado0] at @s run tp @e[tag=tornado4] ^-0.2 ^ ^
+execute as @e[tag=tornado0] at @s run tp @e[tag=tornado5] ^0.2 ^ ^0.2
+execute as @e[tag=tornado0] at @s run tp @e[tag=tornado6] ^-0.2 ^ ^-0.2
+execute as @e[tag=tornado0] at @s run tp @e[tag=tornado7] ^-0.2 ^ ^0.2
+execute as @e[tag=tornado0] at @s run tp @e[tag=tornado8] ^0.2 ^ ^-0.2
+# TODO: частицы, потом вернуться если некрасиво
+scoreboard players add #tornado_particle Timer 1
+execute if score #tornado_particle Timer matches 2.. run scoreboard players set #tornado_particle Timer 0
+execute if score #tornado_particle Timer matches 0 as @e[tag=tornado0] at @s if dimension minecraft:overworld anchored eyes run function disasters:tornado/particle
+
+# --- таймер жизни ---
+execute as @e[tag=seguir,scores={Tornado=1}] at @s run summon marker ~ ~ ~ {Tags:["generarbloque"]}
+execute as @e[tag=seguir,scores={Tornado=9599..}] at @s run weather clear
+execute as @e[tag=seguir,scores={Tornado=9600..}] run function disasters:tornado/cleanup with storage disasters:tornado
+execute as @e[tag=seguir,scores={Tornado=9599..}] at @s run kill @e[type=marker]
+execute as @e[tag=seguir,scores={Tornado=1..9598}] at @s run weather thunder
+
+# --- генератор блоков ---
+execute as @e[tag=generarbloque] at @s run function disasters:tornado/ejecutarrandom
+
+# --- предметы рядом уничтожаются ---
+execute as @e[type=item] at @s if entity @e[tag=seguir,distance=..3] run kill @s
+
+# --- тик таймера ---
+execute as @e[tag=seguir] at @s run scoreboard players add @s Tornado 1
+
+# --- блоки торнадо ---
+execute as @e[tag=BloqueTornado1] at @s run tp @s ^ ^0.5 ^0.3 facing entity @e[tag=Tornado,limit=1,sort=nearest]
+execute as @e[tag=BloqueTornado] at @s run function disasters:tornado/bloque
+execute as @e[tag=BloqueTornado1,tag=tor1] at @s run kill @s
+execute as @e[tag=BloqueTornado1] at @s unless entity @e[tag=Tornado] run tp ^ ^-0.7 ^
+execute as @e[tag=BloqueTornado1] at @s unless block ~ ~1 ~ air run kill @s
+execute as @e[tag=generarbloque] at @s run spreadplayers ~ ~ 1 40 true @s
+execute as @e[tag=seguir] at @s run tp @e[tag=generarbloque,distance=40..] ^ ^ ^5
+execute as @e[tag=BloqueTornado1] at @s run damage @e[distance=..1,type=!item_display,type=!interaction,type=!marker,limit=1] 2 minecraft:fall by @s
+execute as @e[tag=seguir] at @s run fill ~1 ~50 ~-1 ~-1 ~ ~1 air destroy
+
+# ===== seguir: движение =====
+
+# высота — только у seguie и игроков
+execute as @e[tag=seguir] at @s store result score @s altura run data get entity @s Pos[1]
+execute as @a at @s store result score @s altura run data get entity @s Pos[1]
+
+# движение, когда высоко (>=32)
+execute as @e[tag=seguir] at @s if score @s altura matches 32.. run execute unless entity @a[gamemode=!creative,gamemode=!adventure] run tp @s ^ ^ ^0.15 facing entity @e[type=!player,type=!marker,type=!interaction,type=!item_display,type=!item,limit=1,sort=random]
+execute as @e[tag=seguir] at @s if score @s altura matches 32.. run tp @s ^ ^ ^0.15 facing entity @p[gamemode=!creative,gamemode=!spectator]
+execute as @e[tag=seguir] at @s if score @s altura matches 32.. run execute if entity @a[distance=100..] run tp @s ^ ^ ^4 facing entity @p[gamemode=!creative,gamemode=!spectator]
+
+# движение, когда низко (<32)
+execute as @e[tag=seguir] at @s if score @s altura matches ..31 run tp @s ^ ^1 ^0.15
+execute as @e[tag=seguir] at @s if block ~ ~-0.1 ~ air run tp @s ^ ^-0.1 ^
+
+# ===== пометка жертв tor1 =====
+execute as @e[tag=tornado0] at @s run execute as @e[type=!marker,type=!minecraft:player,type=!minecraft:interaction,distance=..2] at @s run tag @s add tor1
+execute as @e[tag=tornado0] at @s run execute as @a[distance=..3,gamemode=!creative,gamemode=!spectator] at @s run tag @s add tor1
+
+# ===== затягивание =====
+execute as @e[type=!player,type=!minecraft:interaction,type=!interaction] at @s unless entity @e[type=minecraft:interaction,tag=tor1,distance=..1] run tp @s ^ ^ ^0.5 facing entity @e[tag=tor1,distance=..10,limit=1]
+
+execute as @e[tag=tornado0] at @s run execute as @e[type=!minecraft:interaction,tag=tor1,scores={tirar=16..}] at @s run tp @e[type=!marker,type=!minecraft:player,type=!minecraft:interaction] ^ ^-1 ^-2 facing entity @e[tag=tornado0,limit=1]
+
+# снятие tor1 (на земле)
+execute as @e[type=!minecraft:interaction,tag=tor1] at @s unless block ~ ~-0.1 ~ air run tag @s remove tor1
+
+# игроки: внешняя зона, подъём, выброс
+execute as @e[tag=tornado0] at @s as @a[tag=!tor1,distance=3..6,gamemode=!creative,gamemode=!spectator] at @s run tp @s ^ ^ ^1 facing entity @e[tag=tornado0,limit=1,sort=nearest]
+execute as @e[tag=tornado0] at @s as @a[scores={tirar=16..},gamemode=!creative,gamemode=!spectator] at @s run tp @s ^ ^-1 ^-2 facing entity @e[tag=tornado0,limit=1,sort=nearest]
+execute as @e[tag=tornado0] at @s as @a[gamemode=!creative,gamemode=!spectator,scores={tirar=0..16}] at @s run tp @s ^ ^0.5 ^ facing entity @e[tag=tornado0,limit=1,sort=nearest]
+
+# мобы: подъём
+execute as @e[tag=tornado0] at @s run execute as @e[type=!marker,type=!minecraft:player,type=!minecraft:interaction,tag=tor1,scores={tirar=0..16}] at @s run tp @s ^ ^0.3 ^ facing entity @e[tag=tornado0,limit=1]
+
+# тик tirar
+execute as @e[tag=tornado0] at @s run execute as @e[type=!marker,type=!minecraft:interaction,tag=tor1] at @s run scoreboard players add @s tirar 1
+
+# сброс tirar — только у тех, у кого он ненулевой и нет tor1
+execute as @e[tag=!tor1,scores={tirar=1..}] at @s run scoreboard players reset @s tirar=== FILE: ./data/disasters/function/tick/terremoto.mcfunction ===
+# disasters:terremoto/tick
+# Вызывается каждый тик для каждого @e[tag=Terremoto].
+
+# 1. Таймер жизни
+scoreboard players add @s TiempoTerremoto 1
+
+# 2. Тряска игроков в радиусе 20 (каждый тик, суммарно нулевая)
+execute as @a[distance=..20] at @s run tp @s ~0.15 ~ ~0.15
+execute as @a[distance=..20] at @s run tp @s ~-0.15 ~ ~-0.15
+
+# 3. Шаги (раз в 20 тиков = раз в секунду)
+execute if score @s TiempoTerremoto matches 1 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 21 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 41 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 61 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 81 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 101 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 121 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 141 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 161 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 181 run function disasters:terremoto/step
+
+# 4. Завершение на 200 тиках
+execute if score @s TiempoTerremoto matches 200 run function disasters:terremoto/cleanup with storage disasters:terremoto=== FILE: ./data/disasters/function/tick/meteor.mcfunction ===
+# disasters:meteoro/tick
+
+# 1. Таймер
+scoreboard players add @s Tiempo 1
+
+# 2. Синхронизация позиции
+execute if entity @e[tag=Meteoro] at @e[tag=Meteoro,limit=1] run tp @s ~ ~ ~
+
+# 3. Частицы (от fireball)
+execute if entity @e[tag=Meteoro] at @e[tag=Meteoro,limit=1] run function disasters:meteoro/particle
+
+# 4. Звук раз в 20 тиков
+scoreboard players add @s MeteoroSound 1
+execute if score @s MeteoroSound matches 20.. run scoreboard players set @s MeteoroSound 0
+execute if score @s MeteoroSound matches 20.. run function disasters:meteoro/sound
+
+# 5. Таймаут
+execute if score @s Tiempo matches 600.. run function disasters:meteoro/cleanup with storage disasters:meteoro
+execute if score @s Tiempo matches 600.. run return 0
+
+# 6. Fireball жив — ждём
+execute if entity @e[tag=Meteoro] run return 0
+
+# 7. Fireball исчез — взрыв + cleanup
+function disasters:meteoro/explode
+function disasters:meteoro/cleanup with storage disasters:meteoro=== FILE: ./data/disasters/function/tick/blackole.mcfunction ===
+# disasters:blackole/tick
+
+# 1. Таймер
+scoreboard players add @s Tiempo 1
+
+# 2. Рост визуала
+execute if score @s Tiempo matches 1 run data modify entity @e[tag=blackole_visual,limit=1] transformation.scale set value [1.0f,1.0f,1.0f]
+execute if score @s Tiempo matches 21 run data modify entity @e[tag=blackole_visual,limit=1] transformation.scale set value [2.0f,2.0f,2.0f]
+execute if score @s Tiempo matches 41 run data modify entity @e[tag=blackole_visual,limit=1] transformation.scale set value [3.0f,3.0f,3.0f]
+execute if score @s Tiempo matches 61 run data modify entity @e[tag=blackole_visual,limit=1] transformation.scale set value [4.0f,4.0f,4.0f]
+execute if score @s Tiempo matches 81 run data modify entity @e[tag=blackole_visual,limit=1] transformation.scale set value [5.0f,5.0f,5.0f]
+
+# 3. Зона смерти
+execute if score @s Tiempo matches 1..20 run execute as @e[distance=..6,type=!marker,type=!item_display,type=!interaction] run kill @s
+execute if score @s Tiempo matches 21..40 run execute as @e[distance=..7,type=!marker,type=!item_display,type=!interaction] run kill @s
+execute if score @s Tiempo matches 41..60 run execute as @e[distance=..8,type=!marker,type=!item_display,type=!interaction] run kill @s
+execute if score @s Tiempo matches 61..80 run execute as @e[distance=..9,type=!marker,type=!item_display,type=!interaction] run kill @s
+execute if score @s Tiempo matches 81..100 run execute as @e[distance=..10,type=!marker,type=!item_display,type=!interaction] run kill @s
+
+# 4. Зона урона
+execute if score @s Tiempo matches 1 run execute as @e[distance=7..11,type=!marker,type=!item_display,type=!interaction] run damage @s 6 minecraft:generic
+execute if score @s Tiempo matches 21 run execute as @e[distance=8..12,type=!marker,type=!item_display,type=!interaction] run damage @s 6 minecraft:generic
+execute if score @s Tiempo matches 41 run execute as @e[distance=9..13,type=!marker,type=!item_display,type=!interaction] run damage @s 6 minecraft:generic
+execute if score @s Tiempo matches 61 run execute as @e[distance=10..14,type=!marker,type=!item_display,type=!interaction] run damage @s 6 minecraft:generic
+execute if score @s Tiempo matches 81 run execute as @e[distance=11..15,type=!marker,type=!item_display,type=!interaction] run damage @s 6 minecraft:generic
+
+# 5. Разрушение блоков
+execute if score @s Tiempo matches 1..100 run function disasters:blackole/destroy
+
+# 6. Притягивание игроков
+scoreboard players add #blackole_pull Timer 1
+execute if score #blackole_pull Timer matches 4.. run scoreboard players set #blackole_pull Timer 0
+execute if score #blackole_pull Timer matches 0 as @a[distance=5..15] at @s run tp @s ^ ^ ^0.5 facing entity @e[tag=blackole,limit=1]
+
+# 7. Схлопывание
+execute if score @s Tiempo matches 100 run data modify entity @e[tag=blackole_visual,limit=1] transformation.scale set value [0.1f,0.1f,0.1f]
+
+# 8. Cleanup
+execute if score @s Tiempo matches 110 run function disasters:blackole/cleanup with storage disasters:blackole=== FILE: ./data/disasters/function/nc/handle_triggers.mcfunction ===
+# disasters:nc/handle_triggers
+
+scoreboard players enable @a nc.spawn
+
+# 1. Торнадо — CN1
+execute as @a[scores={nc.spawn=1}] at @s run summon interaction ~ ~ ~ {Tags:["CN1","caos","nc_spawn"]}
+execute as @a[scores={nc.spawn=1}] at @s run scoreboard players set @e[tag=nc_spawn,distance=..2,limit=1] Tiempo 1200
+execute as @a[scores={nc.spawn=1}] at @s run tag @e[tag=nc_spawn,distance=..2,limit=1] remove nc_spawn
+execute as @a[scores={nc.spawn=1}] run tellraw @s {"text":"[Cataclysms] Торнадо сформировался неподалеку от вас!","color":"red"}
+execute as @a[scores={nc.spawn=1}] run scoreboard players set @s nc.spawn 0
+
+# 2. Метеор — CN3
+execute as @a[scores={nc.spawn=2}] at @s run summon interaction ~ ~ ~ {Tags:["CN3","caos","nc_spawn"]}
+execute as @a[scores={nc.spawn=2}] at @s run scoreboard players set @e[tag=nc_spawn,distance=..2,limit=1] Tiempo 1200
+execute as @a[scores={nc.spawn=2}] at @s run tag @e[tag=nc_spawn,distance=..2,limit=1] remove nc_spawn
+execute as @a[scores={nc.spawn=2}] run tellraw @s {"text":"[Cataclysms] Метеор падает вдали от вас!","color":"gold"}
+execute as @a[scores={nc.spawn=2}] run scoreboard players set @s nc.spawn 0
+
+# 3. Чёрная дыра — CN5
+execute as @a[scores={nc.spawn=3}] at @s run summon interaction ~ ~ ~ {Tags:["CN5","caos","nc_spawn"]}
+execute as @a[scores={nc.spawn=3}] at @s run scoreboard players set @e[tag=nc_spawn,distance=..2,limit=1] Tiempo 1200
+execute as @a[scores={nc.spawn=3}] at @s run tag @e[tag=nc_spawn,distance=..2,limit=1] remove nc_spawn
+execute as @a[scores={nc.spawn=3}] run tellraw @s {"text":"[Cataclysms] Чёрная дыра открылась в безопасном отдалении!","color":"dark_purple"}
+execute as @a[scores={nc.spawn=3}] run scoreboard players set @s nc.spawn 0
+
+# 4. Цунами — CN4
+execute as @a[scores={nc.spawn=4}] at @s run summon interaction ~ ~ ~ {Tags:["CN4","caos","nc_spawn"]}
+execute as @a[scores={nc.spawn=4}] at @s run scoreboard players set @e[tag=nc_spawn,distance=..2,limit=1] Tiempo 1200
+execute as @a[scores={nc.spawn=4}] at @s run tag @e[tag=nc_spawn,distance=..2,limit=1] remove nc_spawn
+execute as @a[scores={nc.spawn=4}] run tellraw @s {"text":"[Cataclysms] Цунами поднимается неподалеку!","color":"aqua"}
+execute as @a[scores={nc.spawn=4}] run scoreboard players set @s nc.spawn 0=== FILE: ./data/disasters/function/blackole/generar.mcfunction ===
+# disasters:blackole/generar
+# Спавн чёрной дыры.
+
+# 1. Телепорт к случайному игроку + разброс 15-25
+execute in minecraft:overworld if entity @a[sort=random,limit=1] at @a[sort=random,limit=1] run spreadplayers ~ ~ 15 25 true @s
+execute in minecraft:overworld unless entity @a[sort=random,limit=1] run kill @s
+
+# 2. Сохранение координат для cleanup
+execute store result storage disasters:blackole x int 1 run data get entity @s Pos[0]
+execute store result storage disasters:blackole z int 1 run data get entity @s Pos[2]
+
+# 3. Форс-загрузка
+execute at @s run forceload add ~ ~ ~ ~
+
+# 4. Визуал — item_display с чёрным бетоном
+summon item_display ~ ~ ~ {item:{id:"minecraft:black_concrete",count:1},Tags:["blackole_visual"],transformation:{translation:[0.0f,0.0f,0.0f],left_rotation:[0.0f,0.0f,0.0f,1.0f],right_rotation:[0.0f,0.0f,0.0f,1.0f],scale:[1.0f,1.0f,1.0f]},view_range:50.0f}
+
+# 5. Якорь — маркер
+summon marker ~ ~ ~ {Tags:["blackole","Catastrofe"]}
+
+# 6. Убить триггер
+kill @s=== FILE: ./data/disasters/function/blackole/cleanup.mcfunction ===
+# disasters:blackole/cleanup
+$forceload remove $(x) 0 $(z)
+kill @e[tag=blackole_visual]
+kill @e[tag=blackole]=== FILE: ./data/disasters/function/blackole/destroy.mcfunction ===
+# disasters:blackole/destroy
+# Разрушение блоков внутри чёрной дыры (радиус зависит от Tiempo).
+
+execute if score @s Tiempo matches 1..20 run fill ~-1 ~-2 ~-1 ~1 ~1 ~1 air
+execute if score @s Tiempo matches 21..40 run fill ~-2 ~-2 ~-2 ~2 ~2 ~2 air
+execute if score @s Tiempo matches 41..60 run fill ~-3 ~-3 ~-3 ~3 ~3 ~3 air
+execute if score @s Tiempo matches 61..80 run fill ~-4 ~-4 ~-4 ~4 ~4 ~4 air
+execute if score @s Tiempo matches 81..100 run fill ~-5 ~-5 ~-5 ~5 ~5 ~5 air=== FILE: ./data/disasters/function/terremoto/montana_step.mcfunction ===
+# disasters:terremoto/montana_step
+fill ~-2 ~1 ~-2 ~2 ~2 ~2 stone replace air
+tp @s ~ ~2 ~=== FILE: ./data/disasters/function/terremoto/step.mcfunction ===
+# disasters:terremoto/step
+# Один шаг (раз в 20 тиков): урон + разрушение/постройка.
+
+# Урон мобам (в радиусе 20, кроме игроков и служебных сущностей)
+execute as @e[distance=..20,type=!player,type=!marker,type=!interaction,type=!item_display,type=!item] run damage @s 3 minecraft:generic
+
+# Урон игрокам (меньше — чтобы не убивать мгновенно)
+execute as @a[distance=..20] run damage @s 2 minecraft:generic
+
+# Разрушение или постройка
+execute if entity @s[tag=Grieta] run function disasters:terremoto/grieta_step
+execute if entity @s[tag=Montana] run function disasters:terremoto/montana_step
+
+playsound block.stone.break ambient @a[distance=..20] ~ ~ ~ 1 1 1=== FILE: ./data/disasters/function/terremoto/cleanup.mcfunction ===
+# disasters:terremoto/cleanup
+# Снимает forceload эпицентра и убивает маркер землетрясения.
+
+$forceload remove $(x) 0 $(z)
+kill @s=== FILE: ./data/disasters/function/terremoto/terremoto.mcfunction ===
+# disasters:terremoto/terremoto
+# Точка входа землетрясения.
+# Телепорт в сторону от случайного игрока, спавн эпицентра, сохранение координат.
+
+# 1. Телепорт к случайному игроку и разброс 15-25 блоков (в стороне, но недалеко).
+#    Если игроков нет — триггер убивается, землетрясение не спавнится.
+execute in minecraft:overworld if entity @a[sort=random,limit=1] at @a[sort=random,limit=1] run spreadplayers ~ ~ 15 25 true @s
+execute in minecraft:overworld unless entity @a[sort=random,limit=1] run kill @s
+
+# 2. Форс-загрузка стартового чанка + сохранение координат для cleanup.
+execute in minecraft:overworld at @s run forceload add ~ ~ ~ ~
+execute store result storage disasters:terremoto x int 1 run data get entity @s Pos[0]
+execute store result storage disasters:terremoto z int 1 run data get entity @s Pos[2]
+
+# 3. Спавн эпицентра с рандомным типом (Grieta или Montana).
+function disasters:terremoto/ejecutarrandom
+
+# 4. Убить триггер (caos-маркер).
+kill @s=== FILE: ./data/disasters/function/terremoto/random.mcfunction ===
+execute store result score rng# Random run random value 1..2=== FILE: ./data/disasters/function/terremoto/grieta_step.mcfunction ===
+# disasters:terremoto/grieta_step
+fill ~-2 ~-1 ~-2 ~2 ~-2 ~2 air
+tp @s ~ ~-2 ~=== FILE: ./data/disasters/function/terremoto/ejecutarrandom.mcfunction ===
+# disasters:terremoto/ejecutarrandom
+# Спавн эпицентра землетрясения
+
+function disasters:terremoto/random
+
+execute if score rng# Random matches 1 run summon marker ~ ~ ~ {Tags:["Terremoto","Grieta","Catastrofe"]}
+execute if score rng# Random matches 2 run summon marker ~ ~ ~ {Tags:["Terremoto","Montana","Catastrofe"]}
+
+scoreboard players reset rng# Random=== FILE: ./data/disasters/function/random.mcfunction ===
+execute store result score rng# Random run random value 1..3=== FILE: ./data/disasters/function/tsunami/spawn.mcfunction ===
+# disasters:tsunami/spawn
+execute store result storage disasters:tsunami x int 1 run data get entity @s Pos[0]
+execute store result storage disasters:tsunami z int 1 run data get entity @s Pos[2]
+summon marker ~ ~ ~ {Tags:["Tsunami","Catastrofe"]}
+execute at @s run forceload add ~ ~ ~ ~=== FILE: ./data/disasters/function/tsunami/generar.mcfunction ===
+# disasters:tsunami/generar
+# Ищем воду рядом с игроком. Если нет — не запускаем цунами.
+
+# Проверка воды в 9 точках вокруг (радиус 5)
+execute in minecraft:overworld at @s if block ~ ~ ~ water run function disasters:tsunami/spawn
+execute in minecraft:overworld at @s if block ~5 ~ ~ water run function disasters:tsunami/spawn
+execute in minecraft:overworld at @s if block ~-5 ~ ~ water run function disasters:tsunami/spawn
+execute in minecraft:overworld at @s if block ~ ~ ~5 water run function disasters:tsunami/spawn
+execute in minecraft:overworld at @s if block ~ ~ ~-5 water run function disasters:tsunami/spawn
+execute in minecraft:overworld at @s if block ~5 ~ ~5 water run function disasters:tsunami/spawn
+execute in minecraft:overworld at @s if block ~-5 ~ ~5 water run function disasters:tsunami/spawn
+execute in minecraft:overworld at @s if block ~5 ~ ~-5 water run function disasters:tsunami/spawn
+execute in minecraft:overworld at @s if block ~-5 ~ ~-5 water run function disasters:tsunami/spawn
+
+# Убить триггер (независимо от того, нашлась вода или нет)
+kill @s=== FILE: ./data/disasters/function/tsunami/rise.mcfunction ===
+# disasters:tsunami/rise
+# Ставим source-блоки воды крестом (5 блоков) и поднимаем маркер на 1 блок вверх.
+
+setblock ~ ~ ~ water
+setblock ~5 ~ ~ water
+setblock ~-5 ~ ~ water
+setblock ~ ~ ~5 water
+setblock ~ ~ ~-5 water
+
+tp @s ~ ~1 ~=== FILE: ./data/disasters/function/tsunami/cleanup.mcfunction ===
+# disasters:tsunami/cleanup
+
+$forceload remove $(x) 0 $(z)
+kill @s=== FILE: ./data/disasters/function/catastrofe.mcfunction ===
+function disasters:catastroferandom
+
+execute if score rng# Random matches 1 run execute as @a[sort=random,limit=1] at @s run summon interaction ~ ~ ~ {Tags:["CN1","caos"]} 
+execute if score rng# Random matches 2 run execute as @a[sort=random,limit=1] at @s run summon interaction ~ ~ ~ {Tags:["CN2","caos"]} 
+execute if score rng# Random matches 3 run execute as @a[sort=random,limit=1] at @s run summon interaction ~ ~ ~ {Tags:["CN3","caos"]} 
+execute if score rng# Random matches 4 run execute as @a[sort=random,limit=1] at @s run summon interaction ~ ~ ~ {Tags:["CN4","caos"]} 
+execute if score rng# Random matches 5 run execute as @a[sort=random,limit=1] at @s run summon interaction ~ ~ ~ {Tags:["CN5","caos"]} 
+execute if score rng# Random matches 6 run execute as @a[sort=random,limit=1] at @s run summon interaction ~ ~ ~ {Tags:["CN6","caos"]} 
+
+scoreboard players reset rng# Random=== FILE: ./data/disasters/function/ejecutarrandom.mcfunction ===
+function disasters:random
+
+execute unless entity @e[tag=Catastrofe] at @s if score rng# Random matches 2..3 run function disasters:catastrofe
+
+scoreboard players reset rng# Random=== FILE: ./spyglass.json ===
+{
+  "env": {
+    "gameVersion": "1.21.1"
+  }
+}
+=== FILE: ./pack.mcmeta ===
+{"pack":{"pack_format":48,"description":"By Kiwi_Kcz"}}
