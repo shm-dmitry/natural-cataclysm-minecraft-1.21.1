@@ -20,7 +20,4 @@ execute as @e[tag=Tsunami] at @s run function disasters:tick/tsunami
 #blackhole
 #execute as @e[tag=blackole] at @s run function disasters:tick/blackole
 
-#sequia
-execute as @e[tag=sequia] at @s run function disasters:sequia/comandos
-
 function disasters:nc/handle_triggers

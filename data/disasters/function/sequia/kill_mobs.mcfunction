@@ -1,0 +1,1 @@
+kill @e[distance=..30,type=!player,type=!item,type=!marker,type=!interaction,type=!item_display,type=!armor_stand,type=!experience_orb]
