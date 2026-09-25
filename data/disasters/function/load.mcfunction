@@ -11,6 +11,7 @@ scoreboard objectives add Pos0 dummy
 scoreboard objectives add Pos2 dummy
 scoreboard objectives add sonido dummy
 scoreboard objectives add TiempoTerremoto dummy
+scoreboard objectives add TiempoTsunami dummy
 
 scoreboard objectives add nc.spawn trigger "Natural Cataclysm Spawn"
 
