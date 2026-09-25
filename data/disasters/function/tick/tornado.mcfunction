@@ -13,13 +13,13 @@ execute as @e[tag=tornado0] at @s run tp @e[tag=tornado5] ^0.2 ^ ^0.2
 execute as @e[tag=tornado0] at @s run tp @e[tag=tornado6] ^-0.2 ^ ^-0.2
 execute as @e[tag=tornado0] at @s run tp @e[tag=tornado7] ^-0.2 ^ ^0.2
 execute as @e[tag=tornado0] at @s run tp @e[tag=tornado8] ^0.2 ^ ^-0.2
-execute as @e[tag=tornado] at @s if dimension minecraft:overworld anchored eyes run function disasters:tornado/particle
-execute as @e[tag=tornado] at @s if dimension minecraft:the_nether anchored eyes run function disasters:tornado/particle
+# TODO: частицы, потом вернуться если некрасиво
+execute as @e[tag=tornado0] at @s if dimension minecraft:overworld anchored eyes run function disasters:tornado/particle
 
 # --- таймер жизни ---
 execute as @e[tag=seguir,scores={Tornado=1}] at @s run summon marker ~ ~ ~ {Tags:["generarbloque"]}
 execute as @e[tag=seguir,scores={Tornado=9599..}] at @s run weather clear
-execute as @e[tag=seguir,scores={Tornado=9600..}] at @s run kill @e[tag=Tornado]
+execute as @e[tag=seguir,scores={Tornado=9600..}] run function disasters:tornado/cleanup with storage disasters:tornado
 execute as @e[tag=seguir,scores={Tornado=9599..}] at @s run kill @e[type=marker]
 execute as @e[tag=seguir,scores={Tornado=1..9598}] at @s run weather thunder
 
@@ -45,7 +45,7 @@ execute as @e[tag=seguir] at @s run fill ~1 ~50 ~-1 ~-1 ~ ~1 air destroy
 
 # ===== seguir: движение =====
 
-# высота — только у seguie и игроков (не у всех сущностей мира!)
+# высота — только у seguie и игроков
 execute as @e[tag=seguir] at @s store result score @s altura run data get entity @s Pos[1]
 execute as @a at @s store result score @s altura run data get entity @s Pos[1]
 
