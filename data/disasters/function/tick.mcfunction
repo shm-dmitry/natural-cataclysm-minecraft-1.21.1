@@ -9,10 +9,7 @@ execute as @e[tag=caos] at @s run function disasters:tick/caos
 execute as @e[tag=tornado] at @s run function disasters:tick/tornado
 
 #Terremoto
-execute as @e at @s unless entity @e[tag=Terremoto] run scoreboard players reset @s Terremoto
-function disasters:terremoto/mover
 execute as @e[tag=Terremoto] at @s run function disasters:tick/terremoto
-execute as @e[tag=generarterremoto] at @s run function disasters:terremoto/terremoto
 
 #Meteoro
 #execute as @e[tag=Meteoro] at @s run function disasters:tick/meteor

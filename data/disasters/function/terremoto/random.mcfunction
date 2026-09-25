@@ -1,1 +1,1 @@
-execute store result score rng# Random run random value 1..16
+execute store result score rng# Random run random value 1..2

@@ -1,22 +1,24 @@
-scoreboard players add @s Terremoto 1
-scoreboard players add @s Tiempo 1
-execute if score @s Tiempo matches ..229 run forceload add ~ ~ ~ ~
-execute if score @s Tiempo matches 230.. run forceload remove all
-execute if score @s Tiempo matches 230.. run kill @s
-execute as @e[tag=!Terremoto] at @s if entity @e[tag=Terremoto] run function disasters:terremoto/temblor
+# disasters:terremoto/tick
+# Вызывается каждый тик для каждого @e[tag=Terremoto].
 
-kill @e[type=falling_block]
+# 1. Таймер жизни
+scoreboard players add @s TiempoTerremoto 1
 
-execute as @e[tag=Grieta] at @s run fill ~-2 300 ~2 ~2 -62 ~-2 air
+# 2. Тряска игроков в радиусе 20 (каждый тик, суммарно нулевая)
+execute as @a[distance=..20] at @s run tp @s ~0.15 ~ ~0.15
+execute as @a[distance=..20] at @s run tp @s ~-0.15 ~ ~-0.15
 
-execute as @e[tag=Montana] at @s run clone ^-15 ^-3 ^ ^30 ^-2 ^ ^ ^-1 ^
-execute as @e[tag=Montana] at @s run clone ^-14 ^-5 ^ ^28 ^-2 ^ ^ ^-1 ^
-execute as @e[tag=Montana] at @s run clone ^-12 ^-7 ^ ^24 ^-2 ^ ^ ^-1 ^
-execute as @e[tag=Montana] at @s run clone ^-10 ^-10 ^ ^20 ^-2 ^ ^ ^-1 ^
-execute as @e[tag=Montana] at @s run clone ^-9 ^-13 ^ ^18 ^-2 ^ ^ ^-1 ^
-execute as @e[tag=Montana] at @s run clone ^-8 ^-15 ^ ^16 ^-2 ^ ^ ^-1 ^
-execute as @e[tag=Montana] at @s run clone ^-6 ^-20 ^ ^12 ^-2 ^ ^ ^-1 ^
-execute as @e[tag=Montana] at @s run clone ^-4 ^-25 ^ ^8 ^-2 ^ ^ ^-1 ^
-execute as @e[tag=Montana] at @s run clone ^-2 ^-30 ^ ^4 ^-2 ^ ^ ^-1 ^
-execute as @e[tag=Montana] at @s run clone ^-1 ^-35 ^ ^1 ^-1 ^ ^ ^-1 ^
-execute as @e[tag=Montana] at @s run clone ^ ^-40 ^ ^ ^ ^ ^ ^-1 ^
+# 3. Шаги (раз в 20 тиков = раз в секунду)
+execute if score @s TiempoTerremoto matches 1 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 21 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 41 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 61 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 81 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 101 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 121 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 141 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 161 run function disasters:terremoto/step
+execute if score @s TiempoTerremoto matches 181 run function disasters:terremoto/step
+
+# 4. Завершение на 200 тиках
+execute if score @s TiempoTerremoto matches 200 run function disasters:terremoto/cleanup with storage disasters:terremoto
