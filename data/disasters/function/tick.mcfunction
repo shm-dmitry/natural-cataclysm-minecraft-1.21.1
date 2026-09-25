@@ -18,6 +18,6 @@ execute as @e[tag=MeteoroWatcher] at @s run function disasters:tick/meteor
 execute as @e[tag=Tsunami] at @s run function disasters:tick/tsunami
 
 #blackhole
-#execute as @e[tag=blackole] at @s run function disasters:tick/blackole
+execute as @e[tag=blackole] at @s run function disasters:tick/blackole
 
 function disasters:nc/handle_triggers
